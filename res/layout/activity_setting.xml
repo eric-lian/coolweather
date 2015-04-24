@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <LinearLayout 
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+    	 <EditText 
+        android:id="@+id/resarch"
+        android:layout_width="0dip"
+		android:layout_height="40dip"
+		android:layout_weight="5"
+        android:textSize="16sp"
+        android:singleLine="true"
+        android:hint="请输入城市的拼音或名字"/>
+	    <ImageView
+	        android:id="@+id/resarch_btn"
+	        android:layout_width="0dip"
+	        android:layout_height="40dip"
+	       android:layout_weight="1"
+	        android:background="@android:drawable/btn_plus"/>
+   	     
+        
+    </LinearLayout>
+   <ListView
+	    android:id="@+id/city_item"
+		android:layout_width="fill_parent"
+		android:layout_height="0dip"
+		android:layout_weight="1">
+	</ListView>
+		
+	
+	
+</LinearLayout>
