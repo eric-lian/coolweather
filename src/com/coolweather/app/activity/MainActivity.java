@@ -2,10 +2,12 @@ package com.coolweather.app.activity;
 
 import java.util.ArrayList;
 
+import org.w3c.dom.Comment;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -15,13 +17,15 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
 import com.coolweather.app.Content;
 import com.coolweather.app.R;
 import com.coolweather.app.model.TodayWeather;
-import com.coolweather.app.model.Weathers.Weather;
 import com.coolweather.app.model.Weathers;
+import com.coolweather.app.model.Weathers.Weather;
+import com.coolweather.app.service.AutoUpdataService;
+import com.coolweather.app.util.CommonUtil;
 import com.coolweather.app.util.HttpUtil;
-import com.coolweather.app.util.JsonUtil;
 import com.coolweather.app.util.SharedPreferencesUtil;
 import com.google.gson.Gson;
 import com.lidroid.xutils.BitmapUtils;
@@ -35,7 +39,7 @@ import com.lidroid.xutils.view.annotation.ViewInject;
 public class MainActivity extends Activity {
 	@ViewInject(R.id.ab_backs)
 	private Button switchCity;
-	@ViewInject(R.id.ab_titles)
+	@ViewInject(R.id.ab_updata)
 	private Button freshWeather;
 	@ViewInject(R.id.ab_titles)
 	private TextView title;
@@ -63,6 +67,45 @@ public class MainActivity extends Activity {
 		requestWindowFeature(getWindow().FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_main);
 		ViewUtils.inject(this);
+		
+		loadCache();
+		if(com.coolweather.app.util.CommonUtil.isNetworkAvailable(this)!=1){
+			loadWeather();
+		};
+		
+		switchCity.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(MainActivity.this,SettingCity.class);
+				startActivity(intent);
+			}
+		});
+		freshWeather.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+			if(CommonUtil.isNetworkAvailable(MainActivity.this)!=1){
+				loadWeather();
+			}else {
+				loadCache();
+			}	
+			}
+		});
+		Intent intent = new Intent(this,AutoUpdataService.class);
+		startService(intent);
+	}
+
+	private void loadCache() {
+		String today = SharedPreferencesUtil.getValue(this,"Today","");
+		String future = SharedPreferencesUtil.getValue(this,"Future","");
+		if(!TextUtils.isEmpty(today)&&!TextUtils.isEmpty(future)){
+			handlerFutureWeather(future);
+			handlerWeatherMessage(today);
+		}
+		
+	}
+
+	public void loadWeather() {
 		//一开始进来的时候，查看是已经设置了地方天气,如果设置了就显示当前设置地方的天气，
 		//否则可以通过定位得到当前的位置，现实当前位置的天气，或者转跳到选择城市的页面
 		//默认显示的是北京的天气
@@ -72,6 +115,7 @@ public class MainActivity extends Activity {
 			
 			@Override
 			public void onSuccess(ResponseInfo<String> responseInfo) {
+				SharedPreferencesUtil.putValue(MainActivity.this,"Today",responseInfo.result);
 				handlerWeatherMessage(responseInfo.result);
 			}
 			
@@ -90,17 +134,10 @@ public class MainActivity extends Activity {
 
 			@Override
 			public void onSuccess(ResponseInfo<String> requesInfo) {
+				SharedPreferencesUtil.putValue(MainActivity.this,"Future",requesInfo.result);
 				handlerFutureWeather(requesInfo.result);
 			}
 			
-		});
-		
-		switchCity.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Intent intent = new Intent(MainActivity.this,SettingCity.class);
-				startActivity(intent);
-			}
 		});
 	}
 
